@@ -17,3 +17,6 @@ class ProductsLoaded extends ProductsState {
   @override
   List<Object?> get props => [products, category];
 }
+
+
+

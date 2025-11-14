@@ -51,7 +51,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
       isFavorite: widget.editing?.isFavorite ?? false,
       imageUrl: _imgCtrl.text.trim().isEmpty
           ? 'https://pcdn.goldapple.ru/p/p/19000197603/imgmain.jpg'
-          : _imgCtrl.text.trim(), // <-- исправлено String? → String
+          : _imgCtrl.text.trim(),
     );
 
     if (widget.editing == null) {

@@ -114,3 +114,4 @@ class ProductsCubit extends Cubit<ProductsState> {
   List<Product> favorites() =>
       _filtered().where((p) => p.isFavorite).toList();
 }
+
