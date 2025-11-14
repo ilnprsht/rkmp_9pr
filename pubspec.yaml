@@ -1,0 +1,33 @@
+name: app_prac5
+description: "Fifth flutter project"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: 2.2.1
+
+  cached_network_image: ^3.4.1
+
+  cupertino_icons: ^1.0.8
+
+  go_router: ^14.2.7
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^5.0.0
+
+flutter:
+
+  uses-material-design: true
+
+

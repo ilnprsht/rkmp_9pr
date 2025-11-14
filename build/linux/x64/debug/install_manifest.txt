@@ -1,0 +1,15 @@
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/app_prac5
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/icudtl.dat
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/lib/libflutter_linux_gtk.so
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/NOTICES.Z
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/FontManifest.json
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.bin
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/shaders/ink_sparkle.frag
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.bin.json
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/packages/cupertino_icons/assets/CupertinoIcons.ttf
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/version.json
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/kernel_blob.bin
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/NativeAssetsManifest.json
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/fonts/MaterialIcons-Regular.otf
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/NOTICES
+/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle/data/flutter_assets/AssetManifest.json
