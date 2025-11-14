@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/products_cubit.dart';
 import '../models/product.dart';
-import '../state/products_container.dart';
 
 class ProductFormScreen extends StatefulWidget {
   final Product? editing;
@@ -13,151 +13,107 @@ class ProductFormScreen extends StatefulWidget {
 
 class _ProductFormScreenState extends State<ProductFormScreen> {
   final _formKey = GlobalKey<FormState>();
-
   final _nameCtrl = TextEditingController();
   final _brandCtrl = TextEditingController();
   final _volumeCtrl = TextEditingController();
   final _expCtrl = TextEditingController();
-  final _imageUrlCtrl = TextEditingController();
-
-  final _categories = const ['Уходовая', 'Парфюмерия', 'Декоративная'];
-  String _category = 'Уходовая';
-  double _rating = 3.0;
+  final _imgCtrl = TextEditingController();
+  String _category = 'Декоративная';
+  double _rating = 4.5;
 
   @override
   void initState() {
     super.initState();
-    final e = widget.editing;
-    if (e != null) {
-      _nameCtrl.text = e.name;
-      _brandCtrl.text = e.brand;
-      _volumeCtrl.text = e.volume;
-      _expCtrl.text = e.expirationDate;
-      _imageUrlCtrl.text = e.imageUrl ?? '';
-      _category = e.category;
-      _rating = e.rating;
+    final p = widget.editing;
+    if (p != null) {
+      _nameCtrl.text = p.name;
+      _brandCtrl.text = p.brand;
+      _volumeCtrl.text = p.volume;
+      _expCtrl.text = p.expirationDate;
+      _imgCtrl.text = p.imageUrl;
+      _category = p.category;
+      _rating = p.rating;
     }
-  }
-
-  @override
-  void dispose() {
-    _nameCtrl.dispose();
-    _brandCtrl.dispose();
-    _volumeCtrl.dispose();
-    _expCtrl.dispose();
-    _imageUrlCtrl.dispose();
-    super.dispose();
   }
 
   void _save() {
     if (!_formKey.currentState!.validate()) return;
+    final cubit = context.read<ProductsCubit>();
 
-    final repo = ProductsContainer.scope(context).repository;
-    final imageUrl =
-    _imageUrlCtrl.text.trim().isEmpty ? null : _imageUrlCtrl.text.trim();
+    final newProduct = Product(
+      id: widget.editing?.id ?? DateTime.now().millisecondsSinceEpoch,
+      name: _nameCtrl.text.trim(),
+      brand: _brandCtrl.text.trim(),
+      category: _category,
+      volume: _volumeCtrl.text.trim(),
+      expirationDate: _expCtrl.text.trim(),
+      rating: _rating,
+      isFavorite: widget.editing?.isFavorite ?? false,
+      imageUrl: _imgCtrl.text.trim().isEmpty
+          ? 'https://pcdn.goldapple.ru/p/p/19000197603/imgmain.jpg'
+          : _imgCtrl.text.trim(), // <-- исправлено String? → String
+    );
 
     if (widget.editing == null) {
-      repo.addProduct(Product(
-        id: 0,
-        name: _nameCtrl.text.trim(),
-        brand: _brandCtrl.text.trim(),
-        category: _category,
-        volume: _volumeCtrl.text.trim(),
-        expirationDate: _expCtrl.text.trim(),
-        rating: _rating,
-        isFavorite: false,
-        imageUrl: imageUrl,
-      ));
+      cubit.addProduct(newProduct);
     } else {
-      repo.updateProduct(widget.editing!.copyWith(
-        name: _nameCtrl.text.trim(),
-        brand: _brandCtrl.text.trim(),
-        category: _category,
-        volume: _volumeCtrl.text.trim(),
-        expirationDate: _expCtrl.text.trim(),
-        rating: _rating,
-        imageUrl: imageUrl,
-      ));
+      cubit.updateProduct(newProduct);
     }
 
-    context.go('/products');
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEdit = widget.editing != null;
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEdit ? 'Редактирование' : 'Добавить продукт'),
-        automaticallyImplyLeading: false,
+        title:
+        Text(widget.editing == null ? 'Добавление товара' : 'Редактирование'),
+        actions: [
+          IconButton(icon: const Icon(Icons.save), onPressed: _save),
+        ],
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Form(
           key: _formKey,
-          child: Column(
+          child: ListView(
             children: [
               TextFormField(
                 controller: _nameCtrl,
                 decoration: const InputDecoration(labelText: 'Название'),
-                validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Введите название' : null,
+                validator: (v) => v == null || v.isEmpty ? 'Введите название' : null,
               ),
               TextFormField(
                 controller: _brandCtrl,
                 decoration: const InputDecoration(labelText: 'Бренд'),
-                validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Введите бренд' : null,
               ),
               DropdownButtonFormField<String>(
                 value: _category,
+                items: const [
+                  DropdownMenuItem(value: 'Декоративная', child: Text('Декоративная')),
+                  DropdownMenuItem(value: 'Уходовая', child: Text('Уходовая')),
+                  DropdownMenuItem(value: 'Парфюмерия', child: Text('Парфюмерия')),
+                ],
+                onChanged: (v) => setState(() => _category = v ?? 'Декоративная'),
                 decoration: const InputDecoration(labelText: 'Категория'),
-                items: _categories
-                    .map((c) => DropdownMenuItem(value: c, child: Text(c)))
-                    .toList(),
-                onChanged: (v) => setState(() => _category = v!),
               ),
               TextFormField(
                 controller: _volumeCtrl,
-                decoration:
-                const InputDecoration(labelText: 'Объём (например, 50 мл)'),
-                validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Укажите объём' : null,
+                decoration: const InputDecoration(labelText: 'Объем'),
               ),
               TextFormField(
                 controller: _expCtrl,
-                decoration:
-                const InputDecoration(labelText: 'Срок годности (ММ.ГГГГ)'),
-                validator: (v) =>
-                (v == null || v.trim().isEmpty) ? 'Укажите срок' : null,
+                decoration: const InputDecoration(labelText: 'Срок годности'),
               ),
               TextFormField(
-                controller: _imageUrlCtrl,
-                decoration: const InputDecoration(
-                    labelText: 'URL изображения (опционально)'),
-                keyboardType: TextInputType.url,
+                controller: _imgCtrl,
+                decoration: const InputDecoration(labelText: 'URL изображения'),
               ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  const Text('Рейтинг:'),
-                  Expanded(
-                    child: Slider(
-                      value: _rating,
-                      min: 1,
-                      max: 5,
-                      divisions: 8,
-                      label: _rating.toStringAsFixed(1),
-                      onChanged: (v) => setState(() => _rating = v),
-                    ),
-                  ),
-                  Text('★ ${_rating.toStringAsFixed(1)}'),
-                ],
-              ),
-              const SizedBox(height: 16),
-              FilledButton.icon(
+              const SizedBox(height: 24),
+              ElevatedButton.icon(
                 onPressed: _save,
-                icon: const Icon(Icons.save),
+                icon: const Icon(Icons.check),
                 label: const Text('Сохранить'),
               ),
             ],
