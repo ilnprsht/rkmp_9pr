@@ -7,7 +7,7 @@ class Product {
   final String expirationDate;
   final double rating;
   final bool isFavorite;
-  final String? imageUrl; // новое поле
+  final String imageUrl;
 
   const Product({
     required this.id,
@@ -18,7 +18,7 @@ class Product {
     required this.expirationDate,
     required this.rating,
     required this.isFavorite,
-    this.imageUrl, // новое
+    required this.imageUrl,
   });
 
   Product copyWith({
@@ -30,7 +30,7 @@ class Product {
     String? expirationDate,
     double? rating,
     bool? isFavorite,
-    String? imageUrl, // новое
+    String? imageUrl,
   }) {
     return Product(
       id: id ?? this.id,
@@ -41,7 +41,7 @@ class Product {
       expirationDate: expirationDate ?? this.expirationDate,
       rating: rating ?? this.rating,
       isFavorite: isFavorite ?? this.isFavorite,
-      imageUrl: imageUrl ?? this.imageUrl, // новое
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 }
