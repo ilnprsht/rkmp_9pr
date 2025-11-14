@@ -1,32 +1,60 @@
 import 'package:flutter/material.dart';
-import 'state/products_container.dart';
-import 'state/products_controller.dart';
-import 'router/app_router.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'cubit/products_cubit.dart';
+import 'screens/all_products_screen.dart';
+import 'screens/favorites_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  final controller = ProductsController()..loadInitial();
-  runApp(AppRoot(controller: controller));
+void main() {
+  runApp(const AppRoot());
 }
 
 class AppRoot extends StatelessWidget {
-  final ProductsController controller;
-  const AppRoot({super.key, required this.controller});
+  const AppRoot({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ProductsContainer(
-      controller: controller,
-      child: MaterialApp.router(
+    return BlocProvider(
+      create: (_) => ProductsCubit(),
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        title: 'Каталог косметики — Inherited',
+        title: 'Каталог косметики — Cubit',
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
           useMaterial3: true,
         ),
-        routerConfig: appRouter,
+        home: const NavigationRoot(),
       ),
     );
   }
 }
 
+class NavigationRoot extends StatefulWidget {
+  const NavigationRoot({super.key});
+
+  @override
+  State<NavigationRoot> createState() => _NavigationRootState();
+}
+
+class _NavigationRootState extends State<NavigationRoot> {
+  int _index = 0;
+
+  final screens = const [
+    AllProductsScreen(),
+    FavoritesScreen(),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: screens[_index],
+      bottomNavigationBar: NavigationBar(
+        selectedIndex: _index,
+        onDestinationSelected: (i) => setState(() => _index = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.list), label: 'Каталог'),
+          NavigationDestination(icon: Icon(Icons.favorite), label: 'Избранное'),
+        ],
+      ),
+    );
+  }
+}
