@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../cubit/products_cubit.dart';
 import '../models/product.dart';
-import '../state/products_container.dart';
 import 'product_form_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
@@ -9,54 +10,61 @@ class ProductDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final repo = ProductsContainer.scope(context).repository;
+    final cubit = context.read<ProductsCubit>();
+    final fresh = cubit.state is ProductsLoaded
+        ? (cubit.state as ProductsLoaded)
+        .products
+        .firstWhere((p) => p.id == product.id, orElse: () => product)
+        : product;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Информация о товаре')),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (product.imageUrl != null)
-              ClipRRect(
+            Center(
+              child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.network(
-                  product.imageUrl!,
-                  height: 220,
-                  width: double.infinity,
+                  fresh.imageUrl,
+                  height: 200,
                   fit: BoxFit.cover,
+                  errorBuilder: (_, __, ___) =>
+                  const Icon(Icons.broken_image, size: 120),
                 ),
               ),
-            const SizedBox(height: 12),
-            Text(product.name,
+            ),
+            const SizedBox(height: 16),
+            Text(fresh.name,
                 style:
-                const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text('Бренд: ${product.brand}'),
-            Text('Категория: ${product.category}'),
-            Text('Объём: ${product.volume}'),
-            Text('Срок годности: ${product.expirationDate}'),
-            Text('Рейтинг: ★ ${product.rating.toStringAsFixed(1)}'),
-            const Divider(height: 24),
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            Text('Бренд: ${fresh.brand}'),
+            Text('Категория: ${fresh.category}'),
+            Text('Объем: ${fresh.volume}'),
+            Text('Срок годности: ${fresh.expirationDate}'),
+            Text('Рейтинг: ★ ${fresh.rating}'),
+            const SizedBox(height: 24),
             Row(
               children: [
                 IconButton(
-                  tooltip: product.isFavorite
-                      ? 'Убрать из избранного'
-                      : 'В избранное',
-                  icon: Icon(product.isFavorite
-                      ? Icons.favorite
-                      : Icons.favorite_border),
-                  onPressed: () => repo.toggleFavorite(product.id),
+                  icon: Icon(
+                    fresh.isFavorite
+                        ? Icons.favorite
+                        : Icons.favorite_border,
+                    color: Colors.pinkAccent,
+                  ),
+                  onPressed: () => cubit.toggleFavorite(fresh.id),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.icon(
+                ElevatedButton.icon(
                   onPressed: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => ProductFormScreen(editing: product),
+                        builder: (_) =>
+                            ProductFormScreen(editing: fresh),
                       ),
                     );
                   },
@@ -66,14 +74,14 @@ class ProductDetailScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: () {
-                    repo.deleteProduct(product.id);
+                    cubit.deleteProduct(fresh.id);
                     Navigator.pop(context);
                   },
                   icon: const Icon(Icons.delete_outline),
                   label: const Text('Удалить'),
                 ),
               ],
-            ),
+            )
           ],
         ),
       ),

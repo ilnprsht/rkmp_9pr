@@ -1,36 +1,39 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
+import 'all_products_screen.dart';
+import 'favorites_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  final List<Widget> _screens = const [
+    AllProductsScreen(),
+    FavoritesScreen(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Главная')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            ListTile(
-              leading: const Icon(Icons.list),
-              title: const Text('Все товары'),
-              onTap: () => context.push('/products'),
-            ),
-            const Divider(),
-            ListTile(
-              leading: const Icon(Icons.favorite),
-              title: const Text('Избранное'),
-              onTap: () => context.push('/favorites'),
-            ),
-            const Spacer(),
-            FilledButton.icon(
-              onPressed: () => context.go('/add'), // горизонтально (без шага назад)
-              icon: const Icon(Icons.add),
-              label: const Text('Добавить продукт'),
-            ),
-          ],
-        ),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.list_alt),
+            label: 'Каталог',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Избранное',
+          ),
+        ],
       ),
     );
   }
