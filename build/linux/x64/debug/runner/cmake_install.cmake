@@ -1,8 +1,8 @@
-# Install script for directory: /home/ilnprsht/AndroidStudioProjects/app_prac5/linux/runner
+# Install script for directory: /home/ilnprsht/AndroidStudioProjects/prac9/linux/runner
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
-  set(CMAKE_INSTALL_PREFIX "/home/ilnprsht/AndroidStudioProjects/app_prac5/build/linux/x64/debug/bundle")
+  set(CMAKE_INSTALL_PREFIX "/home/ilnprsht/AndroidStudioProjects/prac9/build/linux/x64/debug/bundle")
 endif()
 string(REGEX REPLACE "/$" "" CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}")
 

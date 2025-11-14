@@ -17,12 +17,14 @@ class CategoryFilterBar extends StatelessWidget {
     return Wrap(
       spacing: 8,
       children: categories.map((cat) {
-        final isSelected = selected == cat || (cat == 'Все' && selected == null);
+        final isSelected =
+            (cat == 'Все' && selected == null) || selected == cat;
         return ChoiceChip(
           label: Text(cat),
           selected: isSelected,
-          onSelected: (_) =>
-              onChanged(cat == 'Все' ? null : cat),
+          onSelected: (_) {
+            onChanged(cat == 'Все' ? null : cat);
+          },
         );
       }).toList(),
     );
