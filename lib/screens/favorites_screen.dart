@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubit/products_cubit.dart';
 import '../widgets/product_tile.dart';
 import '../widgets/category_filter_bar.dart';
-import 'product_form_screen.dart';
-import 'product_detail_screen.dart';
 
 class FavoritesScreen extends StatelessWidget {
   const FavoritesScreen({super.key});
@@ -35,35 +34,26 @@ class FavoritesScreen extends StatelessWidget {
                 child: items.isEmpty
                     ? const Center(child: Text('Нет избранных товаров'))
                     : ListView.builder(
-                  itemCount: items.length,
-                  itemBuilder: (_, i) {
-                    final p = items[i];
-                    return ProductTile(
-                      product: p,
-                      onToggleFavorite: () =>
-                          cubit.toggleFavorite(p.id),
-                      onDelete: () => cubit.deleteProduct(p.id),
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ProductFormScreen(editing: p),
-                          ),
-                        );
-                      },
-                      onOpen: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ProductDetailScreen(product: p),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        itemCount: items.length,
+                        itemBuilder: (_, i) {
+                          final p = items[i];
+                          return ProductTile(
+                            product: p,
+                            onToggleFavorite: () => cubit.toggleFavorite(p.id),
+                            onDelete: () => cubit.deleteProduct(p.id),
+                            onEdit: () => context.pushNamed(
+                              'productEdit',
+                              pathParameters: {'id': p.id.toString()},
+                              extra: p,
+                            ),
+                            onOpen: () => context.pushNamed(
+                              'productDetail',
+                              pathParameters: {'id': p.id.toString()},
+                              extra: p,
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),

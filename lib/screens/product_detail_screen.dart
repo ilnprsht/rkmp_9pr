@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubit/products_cubit.dart';
 import '../models/product.dart';
-import 'product_form_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
   final Product product;
@@ -59,15 +59,11 @@ class ProductDetailScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ProductFormScreen(editing: fresh),
-                      ),
-                    );
-                  },
+                  onPressed: () => context.pushNamed(
+                    'productEdit',
+                    pathParameters: {'id': fresh.id.toString()},
+                    extra: fresh,
+                  ),
                   icon: const Icon(Icons.edit),
                   label: const Text('Редактировать'),
                 ),

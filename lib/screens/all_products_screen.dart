@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubit/products_cubit.dart';
 import '../widgets/category_filter_bar.dart';
 import '../widgets/product_tile.dart';
 import '../models/product.dart';
-import 'product_form_screen.dart';
-import 'product_detail_screen.dart';
 
 class AllProductsScreen extends StatelessWidget {
   const AllProductsScreen({super.key});
@@ -36,45 +35,32 @@ class AllProductsScreen extends StatelessWidget {
                 child: products.isEmpty
                     ? const Center(child: Text('Ничего не найдено'))
                     : ListView.builder(
-                  itemCount: products.length,
-                  itemBuilder: (_, i) {
-                    final p = products[i];
-                    return ProductTile(
-                      product: p,
-                      onToggleFavorite: () => cubit.toggleFavorite(p.id),
-                      onDelete: () => cubit.deleteProduct(p.id),
-                      onEdit: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ProductFormScreen(editing: p),
-                          ),
-                        );
-                      },
-                      onOpen: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                ProductDetailScreen(product: p),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                ),
+                        itemCount: products.length,
+                        itemBuilder: (_, i) {
+                          final p = products[i];
+                          return ProductTile(
+                            product: p,
+                            onToggleFavorite: () => cubit.toggleFavorite(p.id),
+                            onDelete: () => cubit.deleteProduct(p.id),
+                            onEdit: () => context.pushNamed(
+                              'productEdit',
+                              pathParameters: {'id': p.id.toString()},
+                              extra: p,
+                            ),
+                            onOpen: () => context.pushNamed(
+                              'productDetail',
+                              pathParameters: {'id': p.id.toString()},
+                              extra: p,
+                            ),
+                          );
+                        },
+                      ),
               ),
             ],
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const ProductFormScreen(),
-                ),
-              );
+              context.pushNamed('productCreate');
             },
             child: const Icon(Icons.add),
           ),
