@@ -1,17 +1,82 @@
+import 'dart:collection';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import '../models/care_plan_entry.dart';
 import '../models/product.dart';
+import '../models/shopping_item.dart';
 
-part 'products_state.dart';
+class ProductsState extends Equatable {
+  static const _sentinel = Object();
+  final List<Product> products;
+  final String? categoryFilter;
+  final String searchQuery;
+  final List<CarePlanEntry> carePlan;
+  final List<ShoppingItem> shoppingList;
+  final bool isInitialized;
+
+  const ProductsState({
+    this.products = const [],
+    this.categoryFilter,
+    this.searchQuery = '',
+    this.carePlan = const [],
+    this.shoppingList = const [],
+    this.isInitialized = false,
+  });
+
+  ProductsState copyWith({
+    List<Product>? products,
+    Object? categoryFilter = _sentinel,
+    String? searchQuery,
+    List<CarePlanEntry>? carePlan,
+    List<ShoppingItem>? shoppingList,
+    bool? isInitialized,
+  }) {
+    return ProductsState(
+      products: products ?? this.products,
+      categoryFilter: categoryFilter == _sentinel
+          ? this.categoryFilter
+          : categoryFilter as String?,
+      searchQuery: searchQuery ?? this.searchQuery,
+      carePlan: carePlan ?? this.carePlan,
+      shoppingList: shoppingList ?? this.shoppingList,
+      isInitialized: isInitialized ?? this.isInitialized,
+    );
+  }
+
+  List<Product> get filteredProducts {
+    Iterable<Product> result = products;
+    if (categoryFilter != null) {
+      result = result.where((p) => p.category == categoryFilter);
+    }
+    if (searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      result = result.where(
+        (p) =>
+            p.name.toLowerCase().contains(q) ||
+            p.brand.toLowerCase().contains(q),
+      );
+    }
+    return UnmodifiableListView(result);
+  }
+
+  @override
+  List<Object?> get props =>
+      [
+        products,
+        categoryFilter,
+        searchQuery,
+        carePlan,
+        shoppingList,
+        isInitialized
+      ];
+}
 
 class ProductsCubit extends Cubit<ProductsState> {
-  ProductsCubit() : super(ProductsInitial());
-
-  final List<Product> _products = [];
-  String? _categoryFilter;
+  ProductsCubit() : super(const ProductsState());
 
   void loadInitial() {
-    _products.addAll([
+    const initialProducts = [
       Product(
         id: 1,
         name: 'MACximal Matte Lipstick Russian Red',
@@ -33,7 +98,7 @@ class ProductsCubit extends Cubit<ProductsState> {
         rating: 5.0,
         isFavorite: true,
         imageUrl:
-        'https://www.letu.ru/common/img/pim/2025/10/EX_b9aa478d-31f8-495d-a424-e05b3952beae.jpg',
+            'https://www.letu.ru/common/img/pim/2025/10/EX_b9aa478d-31f8-495d-a424-e05b3952beae.jpg',
       ),
       Product(
         id: 3,
@@ -45,7 +110,7 @@ class ProductsCubit extends Cubit<ProductsState> {
         rating: 4.7,
         isFavorite: false,
         imageUrl:
-        'https://premiumkorea.ru/upload/iblock/761/5572191dc9b1v7dfxm5omuknp15jiuc1.jpg',
+            'https://premiumkorea.ru/upload/iblock/761/5572191dc9b1v7dfxm5omuknp15jiuc1.jpg',
       ),
       Product(
         id: 4,
@@ -67,51 +132,140 @@ class ProductsCubit extends Cubit<ProductsState> {
         expirationDate: '10.2028',
         rating: 4.9,
         isFavorite: false,
-        imageUrl:
-        'https://pcdn.goldapple.ru/p/p/19000197603/imgmain.jpg',
+        imageUrl: 'https://pcdn.goldapple.ru/p/p/19000197603/imgmain.jpg',
       ),
-    ]);
-    emit(ProductsLoaded(List.from(_products), _categoryFilter));
+    ];
+
+    emit(
+      state.copyWith(
+        products: initialProducts,
+        isInitialized: true,
+        carePlan: _defaultCarePlan(),
+      ),
+    );
   }
 
   void addProduct(Product product) {
-    _products.add(product);
-    emit(ProductsLoaded(_filtered(), _categoryFilter));
+    final updated = List<Product>.from(state.products)..add(product);
+    emit(state.copyWith(products: updated));
   }
 
   void updateProduct(Product product) {
-    final index = _products.indexWhere((p) => p.id == product.id);
-    if (index != -1) _products[index] = product;
-    emit(ProductsLoaded(_filtered(), _categoryFilter));
+    final updated = state.products.map((p) {
+      if (p.id == product.id) return product;
+      return p;
+    }).toList();
+    emit(state.copyWith(products: updated));
   }
 
   void deleteProduct(int id) {
-    _products.removeWhere((p) => p.id == id);
-    emit(ProductsLoaded(_filtered(), _categoryFilter));
+    final updatedProducts =
+        state.products.where((p) => p.id != id).toList(growable: false);
+
+    final updatedPlan = state.carePlan
+        .map(
+          (e) => e.copyWith(
+            productIds: e.productIds.where((pid) => pid != id).toList(),
+          ),
+        )
+        .toList();
+    final updatedShopping =
+        state.shoppingList.where((item) => item.productId != id).toList();
+
+    emit(
+      state.copyWith(
+        products: updatedProducts,
+        carePlan: updatedPlan,
+        shoppingList: updatedShopping,
+      ),
+    );
   }
 
   void toggleFavorite(int id) {
-    final i = _products.indexWhere((p) => p.id == id);
-    if (i != -1) {
-      final p = _products[i];
-      _products[i] = p.copyWith(isFavorite: !p.isFavorite);
-      emit(ProductsLoaded(_filtered(), _categoryFilter));
-    }
+    final updated = state.products.map((p) {
+      if (p.id == id) {
+        return p.copyWith(isFavorite: !p.isFavorite);
+      }
+      return p;
+    }).toList();
+    emit(state.copyWith(products: updated));
   }
 
   void setCategoryFilter(String? category) {
-    _categoryFilter = category;
-    emit(ProductsLoaded(_filtered(), _categoryFilter));
+    emit(state.copyWith(categoryFilter: category));
   }
 
-  List<Product> _filtered() {
-    if (_categoryFilter == null) return List.from(_products);
-    return _products
-        .where((p) => p.category == _categoryFilter)
-        .toList();
+  void setSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
   }
 
-  List<Product> favorites() =>
-      _filtered().where((p) => p.isFavorite).toList();
+  List<Product> favorites() {
+    final filtered = state.filteredProducts;
+    return filtered.where((p) => p.isFavorite).toList(growable: false);
+  }
+
+  void addToCarePlan(String day, int productId) {
+    final updated = state.carePlan.map((entry) {
+      if (entry.day == day) {
+        final unique = {...entry.productIds, productId}.toList();
+        return entry.copyWith(productIds: unique);
+      }
+      return entry;
+    }).toList();
+    emit(state.copyWith(carePlan: updated));
+  }
+
+  void removeFromCarePlan(String day, int productId) {
+    final updated = state.carePlan.map((entry) {
+      if (entry.day == day) {
+        return entry.copyWith(
+          productIds: entry.productIds.where((id) => id != productId).toList(),
+        );
+      }
+      return entry;
+    }).toList();
+    emit(state.copyWith(carePlan: updated));
+  }
+
+  void addToShoppingList(int productId) {
+    final exists = state.shoppingList.any((i) => i.productId == productId);
+    if (exists) return;
+    final updated = [
+      ...state.shoppingList,
+      ShoppingItem(productId: productId, isAdded: true),
+    ];
+    emit(state.copyWith(shoppingList: updated));
+  }
+
+  void removeFromShoppingList(int productId) {
+    final updated =
+        state.shoppingList.where((i) => i.productId != productId).toList();
+    emit(state.copyWith(shoppingList: updated));
+  }
+
+  Product? findById(int id) {
+    try {
+      return state.products.firstWhere((p) => p.id == id);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  List<Product> productsByIds(List<int> ids) {
+    final idSet = ids.toSet();
+    return state.products.where((p) => idSet.contains(p.id)).toList();
+  }
+
+  static List<CarePlanEntry> _defaultCarePlan() {
+    const days = [
+      'Понедельник',
+      'Вторник',
+      'Среда',
+      'Четверг',
+      'Пятница',
+      'Суббота',
+      'Воскресенье',
+    ];
+    return days.map((d) => CarePlanEntry(day: d, productIds: const [])).toList();
+  }
 }
-
