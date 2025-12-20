@@ -59,9 +59,11 @@ class DashboardScreen extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
+          crossAxisCount: 3,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: 1,
+          physics: const NeverScrollableScrollPhysics(),
           children: items
               .map(
                 (item) => GestureDetector(

@@ -7,6 +7,7 @@ import '../models/product.dart';
 import '../models/shopping_item.dart';
 
 class ProductsState extends Equatable {
+  static const _sentinel = Object();
   final List<Product> products;
   final String? categoryFilter;
   final List<CarePlanEntry> carePlan;
@@ -23,14 +24,16 @@ class ProductsState extends Equatable {
 
   ProductsState copyWith({
     List<Product>? products,
-    String? categoryFilter,
+    Object? categoryFilter = _sentinel,
     List<CarePlanEntry>? carePlan,
     List<ShoppingItem>? shoppingList,
     bool? isInitialized,
   }) {
     return ProductsState(
       products: products ?? this.products,
-      categoryFilter: categoryFilter ?? this.categoryFilter,
+      categoryFilter: categoryFilter == _sentinel
+          ? this.categoryFilter
+          : categoryFilter as String?,
       carePlan: carePlan ?? this.carePlan,
       shoppingList: shoppingList ?? this.shoppingList,
       isInitialized: isInitialized ?? this.isInitialized,
