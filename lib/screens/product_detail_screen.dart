@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../cubit/products_cubit.dart';
 import '../models/product.dart';
-import 'product_form_screen.dart';
 
 class ProductDetailScreen extends StatelessWidget {
-  final Product product;
+  final Product? product;
   const ProductDetailScreen({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
+    if (product == null) {
+      return const Scaffold(
+        body: Center(child: Text('Товар не найден')),
+      );
+    }
+
     final cubit = context.read<ProductsCubit>();
-    final fresh = cubit.state is ProductsLoaded
-        ? (cubit.state as ProductsLoaded)
-        .products
-        .firstWhere((p) => p.id == product.id, orElse: () => product)
-        : product;
+    final fresh = cubit.state.products
+        .firstWhere((p) => p.id == product!.id, orElse: () => product!);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Информация о товаре')),
@@ -60,13 +63,7 @@ class ProductDetailScreen extends StatelessWidget {
                 const SizedBox(width: 8),
                 ElevatedButton.icon(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            ProductFormScreen(editing: fresh),
-                      ),
-                    );
+                    context.pushNamed('newProduct', extra: fresh);
                   },
                   icon: const Icon(Icons.edit),
                   label: const Text('Редактировать'),

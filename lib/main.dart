@@ -1,15 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'di/locator.dart';
+import 'router/app_router.dart';
 import 'cubit/products_cubit.dart';
-import 'screens/home_screen.dart';
 
 void main() {
-  runApp(
-    BlocProvider(
-      create: (_) => ProductsCubit()..loadInitial(),
-      child: const MyApp(),
-    ),
-  );
+  setupLocator();
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -17,17 +14,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Каталог косметики',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
-        useMaterial3: true,
+    final cubit = getIt.get<ProductsCubit>();
+    return BlocProvider.value(
+      value: cubit,
+      child: MaterialApp.router(
+        title: 'Каталог косметики',
+        debugShowCheckedModeBanner: false,
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.pinkAccent),
+          useMaterial3: true,
+        ),
+        routerConfig: createRouter(cubit),
       ),
-      home: const HomeScreen(),
     );
   }
 }
-
-
 
