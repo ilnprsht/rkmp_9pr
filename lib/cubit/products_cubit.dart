@@ -10,6 +10,7 @@ class ProductsState extends Equatable {
   static const _sentinel = Object();
   final List<Product> products;
   final String? categoryFilter;
+  final String searchQuery;
   final List<CarePlanEntry> carePlan;
   final List<ShoppingItem> shoppingList;
   final bool isInitialized;
@@ -17,6 +18,7 @@ class ProductsState extends Equatable {
   const ProductsState({
     this.products = const [],
     this.categoryFilter,
+    this.searchQuery = '',
     this.carePlan = const [],
     this.shoppingList = const [],
     this.isInitialized = false,
@@ -25,6 +27,7 @@ class ProductsState extends Equatable {
   ProductsState copyWith({
     List<Product>? products,
     Object? categoryFilter = _sentinel,
+    String? searchQuery,
     List<CarePlanEntry>? carePlan,
     List<ShoppingItem>? shoppingList,
     bool? isInitialized,
@@ -34,6 +37,7 @@ class ProductsState extends Equatable {
       categoryFilter: categoryFilter == _sentinel
           ? this.categoryFilter
           : categoryFilter as String?,
+      searchQuery: searchQuery ?? this.searchQuery,
       carePlan: carePlan ?? this.carePlan,
       shoppingList: shoppingList ?? this.shoppingList,
       isInitialized: isInitialized ?? this.isInitialized,
@@ -41,15 +45,31 @@ class ProductsState extends Equatable {
   }
 
   List<Product> get filteredProducts {
-    if (categoryFilter == null) return List.unmodifiable(products);
-    return UnmodifiableListView(
-      products.where((p) => p.category == categoryFilter),
-    );
+    Iterable<Product> result = products;
+    if (categoryFilter != null) {
+      result = result.where((p) => p.category == categoryFilter);
+    }
+    if (searchQuery.isNotEmpty) {
+      final q = searchQuery.toLowerCase();
+      result = result.where(
+        (p) =>
+            p.name.toLowerCase().contains(q) ||
+            p.brand.toLowerCase().contains(q),
+      );
+    }
+    return UnmodifiableListView(result);
   }
 
   @override
   List<Object?> get props =>
-      [products, categoryFilter, carePlan, shoppingList, isInitialized];
+      [
+        products,
+        categoryFilter,
+        searchQuery,
+        carePlan,
+        shoppingList,
+        isInitialized
+      ];
 }
 
 class ProductsCubit extends Cubit<ProductsState> {
@@ -173,6 +193,10 @@ class ProductsCubit extends Cubit<ProductsState> {
 
   void setCategoryFilter(String? category) {
     emit(state.copyWith(categoryFilter: category));
+  }
+
+  void setSearchQuery(String query) {
+    emit(state.copyWith(searchQuery: query));
   }
 
   List<Product> favorites() {

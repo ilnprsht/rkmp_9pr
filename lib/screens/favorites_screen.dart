@@ -24,6 +24,13 @@ class FavoritesScreen extends StatelessWidget {
           body: Column(
             children: [
               Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                child: _SearchField(
+                  initial: state.searchQuery,
+                  onChanged: cubit.setSearchQuery,
+                ),
+              ),
+              Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: CategoryFilterBar(
                   selected: state.categoryFilter,
@@ -62,6 +69,33 @@ class FavoritesScreen extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  final String initial;
+  final ValueChanged<String> onChanged;
+
+  const _SearchField({
+    required this.initial,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = TextEditingController(text: initial);
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: controller.text.length),
+    );
+    return TextField(
+      controller: controller,
+      decoration: const InputDecoration(
+        hintText: 'Поиск в избранном',
+        prefixIcon: Icon(Icons.search),
+        border: OutlineInputBorder(),
+      ),
+      onChanged: onChanged,
     );
   }
 }

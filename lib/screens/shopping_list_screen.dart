@@ -50,30 +50,47 @@ class ShoppingListScreen extends StatelessWidget {
           final products = _shoppingProducts(state);
           return Padding(
             padding: const EdgeInsets.all(16),
-            child: products.isEmpty
-                ? const Center(
-                    child: Text('Добавьте товары, которые хотите купить позже.'),
-                  )
-                : ListView.separated(
-                    itemCount: products.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 8),
-                    itemBuilder: (_, i) {
-                      final product = products[i];
-                      return Card(
-                        child: ListTile(
-                          leading: Image.network(product.imageUrl, width: 56, fit: BoxFit.cover),
-                          title: Text(product.name),
-                          subtitle: Text(product.brand),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete_outline),
-                            onPressed: () => context
-                                .read<ProductsCubit>()
-                                .removeFromShoppingList(product.id),
-                          ),
-                        ),
-                      );
-                    },
+            child: Column(
+              children: [
+                Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+                  child: _SearchField(
+                    initial: state.searchQuery,
+                    onChanged: context.read<ProductsCubit>().setSearchQuery,
                   ),
+                ),
+                const SizedBox(height: 8),
+                Expanded(
+                  child: products.isEmpty
+                      ? const Center(
+                          child:
+                              Text('Добавьте товары, которые хотите купить позже.'),
+                        )
+                      : ListView.separated(
+                          itemCount: products.length,
+                          separatorBuilder: (_, __) => const SizedBox(height: 8),
+                          itemBuilder: (_, i) {
+                            final product = products[i];
+                            return Card(
+                              child: ListTile(
+                                leading: Image.network(product.imageUrl,
+                                    width: 56, fit: BoxFit.cover),
+                                title: Text(product.name),
+                                subtitle: Text(product.brand),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () => context
+                                      .read<ProductsCubit>()
+                                      .removeFromShoppingList(product.id),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+              ],
+            ),
           );
         },
       ),
@@ -87,6 +104,40 @@ class ShoppingListScreen extends StatelessWidget {
 
   List<Product> _shoppingProducts(ProductsState state) {
     final ids = state.shoppingList.map((e) => e.productId).toSet();
-    return state.products.where((p) => ids.contains(p.id)).toList();
+    final query = state.searchQuery.toLowerCase();
+    return state.products.where((p) {
+      final matchesList = ids.contains(p.id);
+      if (!matchesList) return false;
+      if (query.isEmpty) return true;
+      return p.name.toLowerCase().contains(query) ||
+          p.brand.toLowerCase().contains(query);
+    }).toList();
+  }
+}
+
+class _SearchField extends StatelessWidget {
+  final String initial;
+  final ValueChanged<String> onChanged;
+
+  const _SearchField({
+    required this.initial,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final controller = TextEditingController(text: initial);
+    controller.selection = TextSelection.fromPosition(
+      TextPosition(offset: controller.text.length),
+    );
+    return TextField(
+      controller: controller,
+      decoration: const InputDecoration(
+        hintText: 'Поиск в списке покупок',
+        prefixIcon: Icon(Icons.search),
+        border: OutlineInputBorder(),
+      ),
+      onChanged: onChanged,
+    );
   }
 }
